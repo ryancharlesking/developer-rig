@@ -1,8 +1,50 @@
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+const chalk = require('chalk');
+const commandLineArgs = require('command-line-args');
+const cmdOptions = commandLineArgs([
+  {
+    name: 'secret',
+    alias: 's',
+  }, {
+    name: 'config',
+    alias: 'c',
+  },
+]);
 // Do this as the first thing so that any code reading it knows the right env.
 process.env.BABEL_ENV = 'development';
 process.env.NODE_ENV = 'development';
+
+// Set the extension secret as an environment variable if it was passed in via command line args
+if (cmdOptions.secret) {
+  process.env.EXT_SECRET = cmdOptions.secret;
+}
+
+let configFileLocation = null;
+
+if (cmdOptions.config) {
+  try {
+    configFileLocation = path.resolve(process.cwd(), cmdOptions.config);
+    const configFile = fs.readFileSync(configFileLocation, 'utf-8');
+    // Pull config variables from file and set them to environment variables
+    const { clientID, version, channel, ownerName } = JSON.parse(configFile);
+    if (clientID) { process.env.EXT_CLIENT_ID = clientID; }
+    if (version) { process.env.EXT_VERSION = version; }
+    if (channel) { process.env.EXT_CHANNEL = channel; }
+    if (ownerName) { process.env.EXT_OWNER_NAME = ownerName; }
+  } catch (e) {
+    console.log(e);
+    console.log(
+      chalk.red(
+        `Unable to read config file at location: ${chalk.yellow(
+          chalk.bold(configFileLocation)
+        )}. Falling back to environment variables.`
+      )
+    );
+  }
+}
 
 // Makes the script crash on unhandled rejections instead of silently
 // ignoring them. In the future, promise rejections that are not handled will
@@ -14,8 +56,6 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env');
 
-const fs = require('fs');
-const chalk = require('chalk');
 const webpack = require('webpack');
 const WebpackDevServer = require('webpack-dev-server');
 const clearConsole = require('react-dev-utils/clearConsole');
@@ -86,7 +126,7 @@ choosePort(HOST, DEFAULT_PORT)
         return console.log(err);
       }
       if (isInteractive) {
-        clearConsole();
+        //clearConsole();
       }
       console.log(chalk.cyan('Starting the development server...\n'));
       openBrowser(urls.localUrlForBrowser);
