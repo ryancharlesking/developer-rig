@@ -130,13 +130,28 @@ Values for these fields need to be injected as environment variables to the Deve
 * `EXT_CHANNEL`
 * `EXT_OWNER_NAME`
 
+If you don't want to set these values via environment variables, all but the extension secret can be set through a configuration file. This file is specified via a command line argument and is in the format of
+```javascript
+{
+  "clientID": "<client id>",
+  "version": "<version>",
+  "channel": "<channel>",
+  "ownerName": "<owner>"
+}
+```
+
 ### Starting the Developer Rig
 Ensure that the [Developer Rig dependencies](#installing-dependencies) are installed and [required configuration](#developer-rig-configuration) is available.
 
-To start the rig, run:
+To start the rig with environment variables, run:
 ```bash
 EXT_CLIENT_ID=<client id> EXT_SECRET=<secret> EXT_VERSION=<version> EXT_CHANNEL=<channel> EXT_OWNER_NAME=<owner> yarn start
 ```
+To start the rig with a config file and command line arguments, run:
+```bash
+yarn start -s <secret> -c location/of/your/config
+```
+The location of your config file can be either relative to the directory you are running the command or an absolute path to the file.
 
 This will cause your browser to open to `https://localhost.rig.twitch.tv:3000`.
 
